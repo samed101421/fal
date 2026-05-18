@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { CafeConfig } from "@/cafes.config";
 
 type FalState = "idle" | "loading" | "result" | "error";
@@ -20,6 +20,21 @@ export default function CafeFalPage({ config }: Props) {
   const [falState, setFalState] = useState<FalState>("idle");
   const [falText, setFalText] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    // Sadece özel isimle girilmiş demo sayfasındaysak tetikle
+    if (config.slug === "demo" && config.name !== "ÖRNEK KAFE") {
+      const trackedKey = `tracked_demo_${config.name}`;
+      if (!sessionStorage.getItem(trackedKey)) {
+        sessionStorage.setItem(trackedKey, "true");
+        fetch("/api/track-demo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cafeName: config.name })
+        }).catch(e => console.error(e));
+      }
+    }
+  }, [config.slug, config.name]);
 
   // ─── Renk değişkenlerini inline style olarak uygula ───
   const cssVars = {
